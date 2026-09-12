@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Al-Qur'an Offline - Al-Waqiah & Al-Muthaffifin</title>
+
+  <!-- PWA Meta -->
+  <meta name="theme-color" content="#064e3b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Al-Qur'an">
+
+  <!-- Manifest diisi JS -->
+  <link id="manifest-link" rel="manifest">
+
+  <!-- Font Arab -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { min-height: 100%; }
+    body {
+      background: #021a14;
+      color: #f4f4f5;
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    .arab {
+      font-family: 'Scheherazade New', 'Traditional Arabic',
+                   'Noto Naskh Arabic', serif;
+      direction: rtl;
+      text-align: right;
+      -webkit-font-smoothing: antialiased;
+    }
+    @keyframes shimmer {
+      0%   { background-position: -200% 0; }
+      100% { background-position:  200% 0; }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-shimmer {
+      animation: shimmer 2s linear infinite;
+      background-size: 200% 100%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     KONTEN APP
+═══════════════════════════════════════════ -->
+<div id="app">
+  <div style="display:flex;align-items:center;justify-content:center;
+              min-height:100vh;color:#6ee7b7;">
+    Memuat...
+  </div>
+</div>
+
+<!-- Tombol Install (tersembunyi, muncul kalau PWA tersedia) -->
+<button id="btn-install"
+  onclick="window.PWA && window.PWA.triggerInstall()"
+  style="display:none;position:fixed;bottom:96px;right:16px;
+         padding:10px 18px;border-radius:999px;background:#10b981;
+         color:white;border:none;font-size:13px;font-weight:700;
+         cursor:pointer;z-index:1000;align-items:center;gap:6px;
+         box-shadow:0 4px 20px #00000050;">
+  📲 Install App
+</button>
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPT 1: DATA AYAT
+═══════════════════════════════════════════ -->
+<script>
+// ────────────────────────────────────────────
+// DATA AL-WAQIAH (056) - 96 Ayat
+// ────────────────────────────────────────────
+const WAQIAH = {
+  code: '056', name: 'Al-Waqiah', arab: 'الواقعة', count: 96,
+  ayahs: [
+    { n:1,  a:"إِذَا وَقَعَتِ الْوَاقِعَةُ",                                                                           l:"Idzaa waqa'atil waaqi'ah",                                               i:"Apabila terjadi hari Kiamat," },
+    { n:2,  a:"لَيْسَ لِوَقْعَتِهَا كَاذِبَةٌ",                                                                         l:"Laisa liwaq'atihaa kaazibah",                                            i:"Tidak seorang pun dapat berdusta tentang kejadiannya." },
+    { n:3,  a:"خَافِضَةٌ رَافِعَةٌ",                                                                                    l:"Khaafidhatur raafi'ah",                                                  i:"(Kejadian itu) merendahkan dan meninggikan." },
+    { n:4,  a:"إِذَا رُجَّتِ الْأَرْضُ رَجًّا",                                                                         l:"Idzaa rujjatil ardhu rajjaa",                                            i:"Apabila bumi diguncangkan sedahsyat-dahsyatnya," },
+    { n:5,  a:"وَبُسَّتِ الْجِبَالُ بَسًّا",                                                                             l:"Wa bussatil jibaalu bassaa",                                              i:"Dan gunung-gunung dihancurluluhkan sehancur-hancurnya," },
+    { n:6,  a:"فَكَانَتْ هَبَاءً مُنْبَثًّا",                                                                            l:"Fakaanat habaaa'am mumbassaa",                                           i:"Maka jadilah ia debu yang beterbangan," },
+    { n:7,  a:"وَكُنْتُمْ أَزْوَاجًا ثَلَاثَةً",                                                                         l:"Wa kuntum azwaajan salaasah",                                            i:"Dan kamu menjadi tiga golongan," },
+    { n:8,  a:"فَأَصْحَابُ الْمَيْمَنَةِ مَا أَصْحَابُ الْمَيْمَنَةِ",                                                  l:"Fa as-haabul maimanati maa as-haabul maimanah",                           i:"Yaitu golongan kanan, alangkah mulianya golongan kanan itu," },
+    { n:9,  a:"وَأَصْحَابُ الْمَشْأَمَةِ مَا أَصْحَابُ الْمَشْأَمَةِ",                                                  l:"Wa as-haabul mash'amati maa as-haabul mash'amah",                        i:"Dan golongan kiri, alangkah sengsaranya golongan kiri itu," },
+    { n:10, a:"وَالسَّابِقُونَ السَّابِقُونَ",                                                                           l:"Wassaabiquunas saabiquun",                                               i:"Dan orang-orang yang paling dahulu (beriman), merekalah yang paling dahulu (masuk surga)," },
+    { n:11, a:"أُولَٰئِكَ الْمُقَرَّبُونَ",                                                                              l:"Ulaaa'ikal muqarrabuun",                                                 i:"Mereka itulah orang yang dekat kepada Allah," },
+    { n:12, a:"فِي جَنَّاتِ النَّعِيمِ",                                                                                 l:"Fii jannaatin na'iim",                                                   i:"Berada dalam surga kenikmatan," },
+    { n:13, a:"ثُلَّةٌ مِنَ الْأَوَّلِينَ",                                                                              l:"Sullatum minal awwaliin",                                                i:"Segolongan besar dari orang-orang yang terdahulu," },
+    { n:14, a:"وَقَلِيلٌ مِنَ الْآخِرِينَ",                                                                              l:"Wa qaliilum minal aakhiriin",                                            i:"Dan segolongan kecil dari orang-orang yang kemudian." },
+    { n:15, a:"عَلَىٰ سُرُرٍ مَوْضُونَةٍ",                                                                               l:"'Alaa sururim mawdhuunah",                                               i:"Berada di atas dipan yang bertatahkan emas dan permata," },
+    { n:16, a:"مُتَّكِئِينَ عَلَيْهَا مُتَقَابِلِينَ",                                                                   l:"Mutta-ki'iina 'alaihaa mutaqaabiliin",                                   i:"Bersandar di atasnya berhadap-hadapan." },
+    { n:17, a:"يَطُوفُ عَلَيْهِمْ وِلْدَانٌ مُخَلَّدُونَ",                                                               l:"Yathuufu 'alaihim wildaanum mukhalladuun",                               i:"Dikelilingi oleh anak-anak muda yang tetap muda," },
+    { n:18, a:"بِأَكْوَابٍ وَأَبَارِيقَ وَكَأْسٍ مِنْ مَعِينٍ",                                                          l:"Bi-akwaabiw wa abaariiqa wa kaasim mim ma'iin",                          i:"Dengan membawa gelas, cerek dan minuman dari air yang mengalir," },
+    { n:19, a:"لَا يُصَدَّعُونَ عَنْهَا وَلَا يُنْزِفُونَ",                                                               l:"Laa yusadda'uuna 'anhaa wa laa yunzifuun",                               i:"Mereka tidak pening karenanya dan tidak pula mabuk," },
+    { n:20, a:"وَفَاكِهَةٍ مِمَّا يَتَخَيَّرُونَ",                                                                        l:"Wa faakihatim mimmaa yatakhayyaruun",                                   i:"Dan buah-buahan dari apa yang mereka pilih," },
+    { n:21, a:"وَلَحْمِ طَيْرٍ مِمَّا يَشْتَهُونَ",                                                                       l:"Wa lahmi thairim mimmaa yashtahuun",                                    i:"Dan daging burung dari apa yang mereka inginkan," },
+    { n:22, a:"وَحُورٌ عِينٌ",                                                                                            l:"Wa huurum 'iin",                                                         i:"Dan ada bidadari-bidadari bermata jeli," },
+    { n:23, a:"كَأَمْثَالِ اللُّؤْلُؤِ الْمَكْنُونِ",                                                                    l:"Ka-amsaalil lu'lu'il maknuun",                                          i:"Laksana mutiara yang tersimpan baik," },
+    { n:24, a:"جَزَاءً بِمَا كَانُوا يَعْمَلُونَ",                                                                       l:"Jazaaa'am bimaa kaanuu ya'maluun",                                      i:"Sebagai balasan bagi apa yang telah mereka kerjakan." },
+    { n:25, a:"لَا يَسْمَعُونَ فِيهَا لَغْوًا وَلَا تَأْثِيمًا",                                                         l:"Laa yasma'uuna fiihaa laghwaw wa laa ta-siimaa",                        i:"Mereka tidak mendengar perkataan sia-sia dan tidak pula dosa," },
+    { n:26, a:"إِلَّا قِيلًا سَلَامًا سَلَامًا",                                                                         l:"Illaa qiilan salaaman salaamaa",                                         i:"Akan tetapi mereka mendengar ucapan salam, salam." },
+    { n:27, a:"وَأَصْحَابُ الْيَمِينِ مَا أَصْحَابُ الْيَمِينِ",                                                         l:"Wa as-haabul yamiini maa as-haabul yamiin",                              i:"Dan golongan kanan, alangkah bahagianya golongan kanan itu," },
+    { n:28, a:"فِي سِدْرٍ مَخْضُودٍ",                                                                                    l:"Fii sidrim makhdhuud",                                                   i:"Berada di antara pohon bidara yang tak berduri," },
+    { n:29, a:"وَطَلْحٍ مَنْضُودٍ",                                                                                      l:"Wa talhim mandhuud",                                                     i:"Dan pohon pisang yang bersusun-susun buahnya," },
+    { n:30, a:"وَظِلٍّ مَمْدُودٍ",                                                                                       l:"Wa zhillim mamduud",                                                     i:"Dan naungan yang terbentang luas," },
+    { n:31, a:"وَمَاءٍ مَسْكُوبٍ",                                                                                       l:"Wamaa-im maskuub",                                                       i:"Dan air yang tercurah," },
+    { n:32, a:"وَفَاكِهَةٍ كَثِيرَةٍ",                                                                                   l:"Wa faakihatin kasiirah",                                                 i:"Dan buah-buahan yang banyak," },
+    { n:33, a:"لَا مَقْطُوعَةٍ وَلَا مَمْنُوعَةٍ",                                                                       l:"Laa maqthuu'atiw wa laa mamnuu'ah",                                     i:"Yang tidak berhenti dan tidak terlarang mengambilnya," },
+    { n:34, a:"وَفُرُشٍ مَرْفُوعَةٍ",                                                                                    l:"Wa furushim marfuu'ah",                                                  i:"Dan kasur-kasur yang tebal lagi empuk." },
+    { n:35, a:"إِنَّا أَنْشَأْنَاهُنَّ إِنْشَاءً",                                                                       l:"Innaaa anshaanaahunna inshaaa'aa",                                       i:"Sesungguhnya Kami menciptakan mereka dengan langsung," },
+    { n:36, a:"فَجَعَلْنَاهُنَّ أَبْكَارًا",                                                                              l:"Faja'alnaahunna abkaaraa",                                               i:"Dan Kami jadikan mereka gadis-gadis perawan," },
+    { n:37, a:"عُرُبًا أَتْرَابًا",                                                                                      l:"'Uruban atraabaa",                                                       i:"Penuh cinta lagi sebaya umurnya," },
+    { n:38, a:"لِأَصْحَابِ الْيَمِينِ",                                                                                  l:"Li-as-haabil yamiin",                                                    i:"(Kami ciptakan mereka) untuk golongan kanan." },
+    { n:39, a:"ثُلَّةٌ مِنَ الْأَوَّلِينَ",                                                                              l:"Sullatum minal awwaliin",                                                i:"Segolongan besar dari orang-orang yang terdahulu," },
+    { n:40, a:"وَثُلَّةٌ مِنَ الْآخِرِينَ",                                                                              l:"Wa sullatum minal aakhiriin",                                            i:"Dan segolongan besar pula dari orang yang kemudian." },
+    { n:41, a:"وَأَصْحَابُ الشِّمَالِ مَا أَصْحَابُ الشِّمَالِ",                                                         l:"Wa as-haabush shimaali maa as-haabush shimaal",                          i:"Dan golongan kiri, alangkah sengsaranya golongan kiri itu," },
+    { n:42, a:"فِي سَمُومٍ وَحَمِيمٍ",                                                                                   l:"Fii samuumin wa hamiim",                                                 i:"Dalam angin yang amat panas dan air panas yang mendidih," },
+    { n:43, a:"وَظِلٍّ مِنْ يَحْمُومٍ",                                                                                  l:"Wa zhillim mim yahmuum",                                                 i:"Dan dalam naungan asap yang hitam," },
+    { n:44, a:"لَا بَارِدٍ وَلَا كَرِيمٍ",                                                                               l:"Laa baaridin wa laa kariim",                                             i:"Tidak sejuk dan tidak menyenangkan." },
+    { n:45, a:"إِنَّهُمْ كَانُوا قَبْلَ ذَٰلِكَ مُتْرَفِينَ",                                                            l:"Innahum kaanuu qabla zaalika mutrafiin",                                 i:"Sesungguhnya mereka sebelum itu hidup bermewah-mewah," },
+    { n:46, a:"وَكَانُوا يُصِرُّونَ عَلَى الْحِنْثِ الْعَظِيمِ",                                                         l:"Wa kaanuu yusirruuna 'alal hinsil 'azhiim",                             i:"Dan mereka terus-menerus mengerjakan dosa yang besar." },
+    { n:47, a:"وَكَانُوا يَقُولُونَ أَئِذَا مِتْنَا وَكُنَّا تُرَابًا وَعِظَامًا أَإِنَّا لَمَبْعُوثُونَ",               l:"Wa kaanuu yaquuluuna a-izaa mitnaa wa kunnaa turaabaw wa 'izhaaman",    i:"Dan mereka selalu mengatakan: Apakah apabila kami mati dan menjadi tanah dan tulang belulang, kami akan dibangkitkan?" },
+    { n:48, a:"أَوَآبَاؤُنَا الْأَوَّلُونَ",                                                                             l:"Awa aabaaa'unal awwaluun",                                               i:"Apakah bapak-bapak kami yang terdahulu juga?" },
+    { n:49, a:"قُلْ إِنَّ الْأَوَّلِينَ وَالْآخِرِينَ",                                                                  l:"Qul innal awwaliina wal aakhiriin",                                      i:"Katakanlah: Sesungguhnya orang-orang yang terdahulu dan yang terkemudian," },
+    { n:50, a:"لَمَجْمُوعُونَ إِلَىٰ مِيقَاتِ يَوْمٍ مَعْلُومٍ",                                                         l:"Lamajmuu'uuna ilaa miiqaati yaumim ma'luum",                             i:"Benar-benar akan dikumpulkan di waktu tertentu pada hari yang dikenal." },
+    { n:51, a:"ثُمَّ إِنَّكُمْ أَيُّهَا الضَّالُّونَ الْمُكَذِّبُونَ",                                                    l:"Summa innakum ayyuhadh dhaalluunal mukazzibuun",                        i:"Kemudian sesungguhnya kamu hai orang-orang yang sesat lagi mendustakan," },
+    { n:52, a:"لَآكِلُونَ مِنْ شَجَرٍ مِنْ زَقُّومٍ",                                                                    l:"La-aakiluuna min shajarim min zaqquum",                                  i:"Benar-benar akan memakan pohon zaqqum," },
+    { n:53, a:"فَمَالِئُونَ مِنْهَا الْبُطُونَ",                                                                         l:"Famaali'uuna minhal butuun",                                             i:"Dan akan memenuhi perut dengannya," },
+    { n:54, a:"فَشَارِبُونَ عَلَيْهِ مِنَ الْحَمِيمِ",                                                                   l:"Fasyaaribuuna 'alaihi minal hamiim",                                     i:"Kemudian kamu minum di atasnya air yang sangat panas," },
+    { n:55, a:"فَشَارِبُونَ شُرْبَ الْهِيمِ",                                                                            l:"Fasyaaribuuna syurbal hiim",                                             i:"Maka kamu minum seperti unta yang sangat haus." },
+    { n:56, a:"هَٰذَا نُزُلُهُمْ يَوْمَ الدِّينِ",                                                                       l:"Haazaa nuzuluhum yaumad diin",                                          i:"Itulah hidangan untuk mereka pada hari pembalasan." },
+    { n:57, a:"نَحْنُ خَلَقْنَاكُمْ فَلَوْلَا تُصَدِّقُونَ",                                                             l:"Nahnu khalaqnaakum falau laa tushaddiquun",                              i:"Kami telah menciptakan kamu, maka mengapa kamu tidak membenarkan?" },
+    { n:58, a:"أَفَرَأَيْتُمْ مَا تُمْنُونَ",                                                                            l:"Afara-aitum maa tumnuun",                                                i:"Maka terangkanlah kepadaku tentang nutfah yang kamu pancarkan," },
+    { n:59, a:"أَأَنْتُمْ تَخْلُقُونَهُ أَمْ نَحْنُ الْخَالِقُونَ",                                                      l:"A-antum takhluquunahuuu am nahnul khaaliquun",                          i:"Kamukah yang menciptakannya, atau Kamikah yang menciptakannya?" },
+    { n:60, a:"نَحْنُ قَدَّرْنَا بَيْنَكُمُ الْمَوْتَ وَمَا نَحْنُ بِمَسْبُوقِينَ",                                     l:"Nahnu qaddarnaa bainakumul mauta wa maa nahnu bimasbuuqiin",             i:"Kami telah menentukan kematian di antara kamu dan Kami tidak akan dapat dikalahkan," },
+    { n:61, a:"عَلَىٰ أَنْ نُبَدِّلَ أَمْثَالَكُمْ وَنُنْشِئَكُمْ فِي مَا لَا تَعْلَمُونَ",                             l:"'Alaaa an nubaddila amsaalakum wa nunshi-akum fii maa laa ta'lamuun",   i:"Untuk menggantikan kamu dan menciptakan kamu kelak dalam keadaan yang tidak kamu ketahui." },
+    { n:62, a:"وَلَقَدْ عَلِمْتُمُ النَّشْأَةَ الْأُولَىٰ فَلَوْلَا تَذَكَّرُونَ",                                       l:"Wa laqad 'alimtumun nash-atal uulaa falau laa tazakkaruun",             i:"Dan sesungguhnya kamu telah mengetahui penciptaan yang pertama, maka mengapakah kamu tidak mengambil pelajaran?" },
+    { n:63, a:"أَفَرَأَيْتُمْ مَا تَحْرُثُونَ",                                                                          l:"Afara-aitum maa tahrusuun",                                              i:"Maka terangkanlah kepadaku tentang yang kamu tanam," },
+    { n:64, a:"أَأَنْتُمْ تَزْرَعُونَهُ أَمْ نَحْنُ الزَّارِعُونَ",                                                      l:"A-antum tazra'uunahuuu am nahnuz zaari'uun",                            i:"Kamukah yang menumbuhkannya atau Kamikah yang menumbuhkannya?" },
+    { n:65, a:"لَوْ نَشَاءُ لَجَعَلْنَاهُ حُطَامًا فَظَلْتُمْ تَفَكَّهُونَ",                                             l:"Lau nasyaaa'u laja'alnaahu huthaaman fazhaltum tafakkahuun",            i:"Kalau Kami kehendaki, benar-benar Kami jadikan dia hancur, sehingga kamu menjadi tercengang," },
+    { n:66, a:"إِنَّا لَمُغْرَمُونَ",                                                                                    l:"Innaa lamughramuun",                                                     i:"(Sambil berkata): Sesungguhnya kami benar-benar menderita kerugian," },
+    { n:67, a:"بَلْ نَحْنُ مَحْرُومُونَ",                                                                                l:"Bal nahnu mahruumuun",                                                   i:"Bahkan kami menjadi orang-orang yang tidak mendapat hasil apa-apa." },
+    { n:68, a:"أَفَرَأَيْتُمُ الْمَاءَ الَّذِي تَشْرَبُونَ",                                                             l:"Afara-aitumul maaa'al lazii tashrabuun",                                i:"Maka terangkanlah kepadaku tentang air yang kamu minum," },
+    { n:69, a:"أَأَنْتُمْ أَنْزَلْتُمُوهُ مِنَ الْمُزْنِ أَمْ نَحْنُ الْمُنْزِلُونَ",                                   l:"A-antum anzaltumuuhu minal muzni am nahnul munziluun",                  i:"Kamukah yang menurunkannya dari awan ataukah Kami yang menurunkannya?" },
+    { n:70, a:"لَوْ نَشَاءُ جَعَلْنَاهُ أُجَاجًا فَلَوْلَا تَشْكُرُونَ",                                                 l:"Lau nasyaaa'u ja'alnaahu ujaajan falau laa tashkuruun",                 i:"Kalau Kami kehendaki, niscaya Kami jadikan dia asin, maka mengapakah kamu tidak bersyukur?" },
+    { n:71, a:"أَفَرَأَيْتُمُ النَّارَ الَّتِي تُورُونَ",                                                                 l:"Afara-aitumun naaral latii tuuruun",                                    i:"Maka terangkanlah kepadaku tentang api yang kamu nyalakan," },
+    { n:72, a:"أَأَنْتُمْ أَنْشَأْتُمْ شَجَرَتَهَا أَمْ نَحْنُ الْمُنْشِئُونَ",                                          l:"A-antum ansya-tum syajaratahaaa am nahnul munsyi-uun",                  i:"Kamukah yang menjadikan kayu itu atau Kamikah yang menjadikannya?" },
+    { n:73, a:"نَحْنُ جَعَلْنَاهَا تَذْكِرَةً وَمَتَاعًا لِلْمُقْوِينَ",                                                 l:"Nahnu ja'alnaahaa tazkirataw wa mataa'al lil muqwiin",                  i:"Kami menjadikan api itu untuk peringatan dan bahan yang berguna bagi musafir di padang pasir." },
+    { n:74, a:"فَسَبِّحْ بِاسْمِ رَبِّكَ الْعَظِيمِ",                                                                    l:"Fasabbih bismi rabbikal 'azhiim",                                        i:"Maka bertasbihlah dengan (menyebut) nama Rabbmu Yang Maha Besar." },
+    { n:75, a:"فَلَا أُقْسِمُ بِمَوَاقِعِ النُّجُومِ",                                                                   l:"Falaaa uqsimu bimawaaqi'in nujuum",                                     i:"Maka Aku bersumpah dengan masa turunnya bagian-bagian Al-Qur'an," },
+    { n:76, a:"وَإِنَّهُ لَقَسَمٌ لَوْ تَعْلَمُونَ عَظِيمٌ",                                                             l:"Wa innahuu laqasamul lau ta'lamuuna 'azhiim",                           i:"Sesungguhnya sumpah itu adalah sumpah yang besar kalau kamu mengetahui," },
+    { n:77, a:"إِنَّهُ لَقُرْآنٌ كَرِيمٌ",                                                                               l:"Innahuu laqur-aanun kariim",                                             i:"Sesungguhnya Al-Qur'an ini adalah bacaan yang sangat mulia," },
+    { n:78, a:"فِي كِتَابٍ مَكْنُونٍ",                                                                                   l:"Fii kitaabim maknuun",                                                   i:"Pada kitab yang terpelihara (Lauhul Mahfuzh)," },
+    { n:79, a:"لَا يَمَسُّهُ إِلَّا الْمُطَهَّرُونَ",                                                                    l:"Laa yamassuhuuu illal muthahharuun",                                    i:"Tidak menyentuhnya kecuali orang-orang yang disucikan," },
+    { n:80, a:"تَنْزِيلٌ مِنْ رَبِّ الْعَالَمِينَ",                                                                      l:"Tanzilum mir rabbil 'aalamiin",                                         i:"Diturunkan dari Rabb semesta alam." },
+    { n:81, a:"أَفَبِهَٰذَا الْحَدِيثِ أَنْتُمْ مُدْهِنُونَ",                                                            l:"Afabihaazal hadiisi antum mudhinuun",                                   i:"Maka apakah kamu menganggap remeh saja Al-Qur'an ini?" },
+    { n:82, a:"وَتَجْعَلُونَ رِزْقَكُمْ أَنَّكُمْ تُكَذِّبُونَ",                                                         l:"Wa taj'aluuna rizqakum annakum tukazzibuun",                            i:"Kamu (mengganti) rezeki dengan mendustakan Allah." },
+    { n:83, a:"فَلَوْلَا إِذَا بَلَغَتِ الْحُلْقُومَ",                                                                   l:"Falau laaa izaa balaghatil hulquum",                                    i:"Maka mengapa ketika nyawa sampai di kerongkongan," },
+    { n:84, a:"وَأَنْتُمْ حِينَئِذٍ تَنْظُرُونَ",                                                                        l:"Wa antum hiina-izin tanzhuruun",                                         i:"Padahal kamu ketika itu melihat," },
+    { n:85, a:"وَنَحْنُ أَقْرَبُ إِلَيْهِ مِنْكُمْ وَلَٰكِنْ لَا تُبْصِرُونَ",                                           l:"Wa nahnu aqrabu ilaihi minkum wa laakil laa tubshiruun",                i:"Dan Kami lebih dekat kepadanya dari pada kamu. Tetapi kamu tidak melihat," },
+    { n:86, a:"فَلَوْلَا إِنْ كُنْتُمْ غَيْرَ مَدِينِينَ",                                                               l:"Falau laaa in kuntum ghaira madiiniin",                                  i:"Maka mengapa jika kamu tidak dikuasai Allah?" },
+    { n:87, a:"تَرْجِعُونَهَا إِنْ كُنْتُمْ صَادِقِينَ",                                                                 l:"Tarji'uunahaaa in kuntum shaadiqiin",                                   i:"Kamu tidak mengembalikan nyawa itu jika kamu adalah orang-orang yang benar?" },
+    { n:88, a:"فَأَمَّا إِنْ كَانَ مِنَ الْمُقَرَّبِينَ",                                                                 l:"Fa ammaaa in kaana minal muqarrabiin",                                  i:"Adapun jika dia termasuk orang-orang yang didekatkan kepada Allah," },
+    { n:89, a:"فَرَوْحٌ وَرَيْحَانٌ وَجَنَّتُ نَعِيمٍ",                                                                  l:"Farauhun wa raihaanuw wa jannatu na'iim",                               i:"Maka dia memperoleh ketenteraman dan rezeki serta surga kenikmatan." },
+    { n:90, a:"وَأَمَّا إِنْ كَانَ مِنْ أَصْحَابِ الْيَمِينِ",                                                           l:"Wa ammaaa in kaana min as-haabil yamiin",                               i:"Dan adapun jika dia termasuk golongan kanan," },
+    { n:91, a:"فَسَلَامٌ لَكَ مِنْ أَصْحَابِ الْيَمِينِ",                                                               l:"Fasalaamul laka min as-haabil yamiin",                                  i:"Maka keselamatan bagimu karena kamu dari golongan kanan." },
+    { n:92, a:"وَأَمَّا إِنْ كَانَ مِنَ الْمُكَذِّبِينَ الضَّالِّينَ",                                                   l:"Wa ammaaa in kaana minal mukazzibiinadh dhaalliin",                     i:"Dan adapun jika dia termasuk golongan yang mendustakan lagi sesat," },
+    { n:93, a:"فَنُزُلٌ مِنْ حَمِيمٍ",                                                                                   l:"Fanuzulum min hamiim",                                                   i:"Maka dia mendapat hidangan air yang mendidih," },
+    { n:94, a:"وَتَصْلِيَةُ جَحِيمٍ",                                                                                    l:"Wa tashliyatu jahiim",                                                   i:"Dan dibakar di dalam jahannam." },
+    { n:95, a:"إِنَّ هَٰذَا لَهُوَ حَقُّ الْيَقِينِ",                                                                    l:"Inna haazaa lahuwa haqqul yaqiin",                                      i:"Sesungguhnya ini adalah suatu keyakinan yang benar." },
+    { n:96, a:"فَسَبِّحْ بِاسْمِ رَبِّكَ الْعَظِيمِ",                                                                    l:"Fasabbih bismi rabbikal 'azhiim",                                       i:"Maka bertasbihlah dengan (menyebut) nama Rabbmu Yang Maha Besar." }
+  ]
+};
+
+// ────────────────────────────────────────────
+// DATA AL-MUTHAFFIFIN (083) - 36 Ayat
+// ────────────────────────────────────────────
+const MUTAF = {
+  code: '083', name: 'Al-Muthaffifin', arab: 'المطففين', count: 36,
+  ayahs: [
+    { n:1,  a:"وَيْلٌ لِلْمُطَفِّفِينَ",                                                                                l:"Wailul lil mutaffifiin",                                                 i:"Kecelakaan besarlah bagi orang-orang yang curang," },
+    { n:2,  a:"الَّذِينَ إِذَا اكْتَالُوا عَلَى النَّاسِ يَسْتَوْفُونَ",                                               l:"Allaziina izak taaluu 'alan naasi yastaufuun",                          i:"(Yaitu) orang-orang yang apabila menerima takaran minta dipenuhi," },
+    { n:3,  a:"وَإِذَا كَالُوهُمْ أَوْ وَزَنُوهُمْ يُخْسِرُونَ",                                                       l:"Wa izaa kaaluuhum au wazanuhum yukhsiruun",                             i:"Dan apabila mereka menakar atau menimbang untuk orang lain, mereka mengurangi." },
+    { n:4,  a:"أَلَا يَظُنُّ أُولَٰئِكَ أَنَّهُمْ مَبْعُوثُونَ",                                                       l:"Alaa yazhunnu ulaaa'ika annahum mab'uusuun",                            i:"Tidakkah orang-orang itu yakin, bahwa sesungguhnya mereka akan dibangkitkan," },
+    { n:5,  a:"لِيَوْمٍ عَظِيمٍ",                                                                                       l:"Liyaumim 'azhiim",                                                       i:"Pada suatu hari yang besar," },
+    { n:6,  a:"يَوْمَ يَقُومُ النَّاسُ لِرَبِّ الْعَالَمِينَ",                                                          l:"Yauma yaquumun naasu lirabbil 'aalamiin",                               i:"(Yaitu) hari ketika manusia berdiri menghadap Tuhan semesta alam?" },
+    { n:7,  a:"كَلَّا إِنَّ كِتَابَ الْفُجَّارِ لَفِي سِجِّينٍ",                                                       l:"Kallaaa inna kitaabal fujjaari lafii sijjiin",                           i:"Sekali-kali jangan curang, sesungguhnya kitab orang yang durhaka tersimpan dalam Sijjin." },
+    { n:8,  a:"وَمَا أَدْرَاكَ مَا سِجِّينٌ",                                                                           l:"Wa maaa adraaka maa sijjiin",                                            i:"Tahukah kamu apakah Sijjin itu?" },
+    { n:9,  a:"كِتَابٌ مَرْقُومٌ",                                                                                      l:"Kitaabum marquum",                                                       i:"(Ialah) kitab yang bertulis." },
+    { n:10, a:"وَيْلٌ يَوْمَئِذٍ لِلْمُكَذِّبِينَ",                                                                    l:"Wailuny yauma-izil lil mukazzibiin",                                    i:"Kecelakaan besarlah pada hari itu bagi orang-orang yang mendustakan," },
+    { n:11, a:"الَّذِينَ يُكَذِّبُونَ بِيَوْمِ الدِّينِ",                                                               l:"Allaziina yukazzibuuna biyaumid diin",                                  i:"(Yaitu) orang-orang yang mendustakan hari pembalasan," },
+    { n:12, a:"وَمَا يُكَذِّبُ بِهِ إِلَّا كُلُّ مُعْتَدٍ أَثِيمٍ",                                                   l:"Wa maa yukazzibu bihiii illaa kullu mu'tadin asiim",                    i:"Dan tidak ada yang mendustakan hari pembalasan melainkan setiap orang yang melampaui batas lagi berdosa." },
+    { n:13, a:"إِذَا تُتْلَىٰ عَلَيْهِ آيَاتُنَا قَالَ أَسَاطِيرُ الْأَوَّلِينَ",                                     l:"Izaa tutlaa 'alaihi aayaatunaa qaala asaathiirul awwaliin",             i:"Yang apabila dibacakan kepadanya ayat-ayat Kami, ia berkata: Itu adalah dongeng orang-orang yang dahulu." },
+    { n:14, a:"كَلَّا بَلْ رَانَ عَلَىٰ قُلُوبِهِمْ مَا كَانُوا يَكْسِبُونَ",                                          l:"Kallaa bal raana 'alaa quluubihim maa kaanuu yaksibuun",                i:"Sekali-kali tidak, sebenarnya apa yang selalu mereka usahakan itu menutupi hati mereka." },
+    { n:15, a:"كَلَّا إِنَّهُمْ عَنْ رَبِّهِمْ يَوْمَئِذٍ لَمَحْجُوبُونَ",                                             l:"Kallaaa innahum 'ar rabbihim yauma-izil lamahjuubuun",                  i:"Sekali-kali tidak, sesungguhnya mereka pada hari itu benar-benar tertutup dari rahmat Tuhan mereka," },
+    { n:16, a:"ثُمَّ إِنَّهُمْ لَصَالُو الْجَحِيمِ",                                                                    l:"Summa innahum lashaaluul jahiim",                                       i:"Kemudian, sesungguhnya mereka benar-benar masuk neraka," },
+    { n:17, a:"ثُمَّ يُقَالُ هَٰذَا الَّذِي كُنْتُمْ بِهِ تُكَذِّبُونَ",                                               l:"Summa yuqaalu haazal lazii kuntum bihii tukazzibuun",                   i:"Kemudian, dikatakan kepada mereka: Inilah azab yang dahulu selalu kamu dustakan." },
+    { n:18, a:"كَلَّا إِنَّ كِتَابَ الْأَبْرَارِ لَفِي عِلِّيِّينَ",                                                   l:"Kallaaa inna kitaabal abraari lafii 'illiyyiin",                        i:"Sekali-kali tidak, sesungguhnya kitab orang-orang yang berbakti tersimpan dalam Illiyyin," },
+    { n:19, a:"وَمَا أَدْرَاكَ مَا عِلِّيُّونَ",                                                                        l:"Wa maaa adraaka maa 'illiyyuun",                                         i:"Tahukah kamu apakah Illiyyin itu?" },
+    { n:20, a:"كِتَابٌ مَرْقُومٌ",                                                                                      l:"Kitaabum marquum",                                                       i:"(Yaitu) kitab yang bertulis," },
+    { n:21, a:"يَشْهَدُهُ الْمُقَرَّبُونَ",                                                                             l:"Yashhaduhul muqarrabuun",                                                i:"Yang disaksikan oleh malaikat-malaikat yang didekatkan kepada Allah." },
+    { n:22, a:"إِنَّ الْأَبْرَارَ لَفِي نَعِيمٍ",                                                                       l:"Innal abraara lafii na'iim",                                             i:"Sesungguhnya orang yang berbakti benar-benar berada dalam kenikmatan yang besar (surga)," },
+    { n:23, a:"عَلَى الْأَرَائِكِ يَنْظُرُونَ",                                                                         l:"Alal araaa'iki yanzhuruun",                                              i:"Mereka (duduk) di atas dipan-dipan sambil memandang," },
+    { n:24, a:"تَعْرِفُ فِي وُجُوهِهِمْ نَضْرَةَ النَّعِيمِ",                                                          l:"Ta'rifu fii wujuuhihim nadhratan na'iim",                               i:"Kamu dapat mengetahui dari wajah mereka kesenangan yang penuh kenikmatan," },
+    { n:25, a:"يُسْقَوْنَ مِنْ رَحِيقٍ مَخْتُومٍ",                                                                     l:"Yusqauna mir rahiiqim makhtuum",                                        i:"Mereka diberi minum dari khamar murni yang dilak tempatnya," },
+    { n:26, a:"خِتَامُهُ مِسْكٌ وَفِي ذَٰلِكَ فَلْيَتَنَافَسِ الْمُتَنَافِسُونَ",                                      l:"Khitaamuhuu misk, wa fii zaalika falyatanaafasil mutanaafisuun",        i:"Laknya adalah kesturi; dan untuk yang demikian itu hendaknya orang berlomba-lomba." },
+    { n:27, a:"وَمِزَاجُهُ مِنْ تَسْنِيمٍ",                                                                             l:"Wa mizaajuhuu min tasniim",                                              i:"Dan campuran khamar murni itu adalah dari tasnim," },
+    { n:28, a:"عَيْنًا يَشْرَبُ بِهَا الْمُقَرَّبُونَ",                                                                 l:"Ainay yashrabu bihal muqarrabuun",                                      i:"(Yaitu) mata air yang minum daripadanya orang-orang yang didekatkan kepada Allah." },
+    { n:29, a:"إِنَّ الَّذِينَ أَجْرَمُوا كَانُوا مِنَ الَّذِينَ آمَنُوا يَضْحَكُونَ",                                l:"Innal laziina ajramuu kaanuu minal laziina aamanuu yadhhakuun",         i:"Sesungguhnya orang-orang yang berdosa, adalah mereka yang dahulunya menertawakan orang-orang yang beriman," },
+    { n:30, a:"وَإِذَا مَرُّوا بِهِمْ يَتَغَامَزُونَ",                                                                  l:"Wa izaa marruu bihim yataghaamazuun",                                   i:"Dan apabila orang-orang yang beriman lalu di hadapan mereka, mereka saling mengedipkan matanya," },
+    { n:31, a:"وَإِذَا انْقَلَبُوا إِلَىٰ أَهْلِهِمُ انْقَلَبُوا فَكِهِينَ",                                           l:"Wa izanqalabuuu ilaaa ahlihimun qalabuu fakihiin",                      i:"Dan apabila orang-orang yang berdosa itu kembali kepada kaumnya, mereka kembali dengan gembira," },
+    { n:32, a:"وَإِذَا رَأَوْهُمْ قَالُوا إِنَّ هَٰؤُلَاءِ لَضَالُّونَ",                                               l:"Wa izaa ra-auhum qaaluu inna haaa'ulaaa'i ladhaalluun",                i:"Dan apabila mereka melihat orang-orang mukmin, mereka mengatakan: Sesungguhnya mereka itu benar-benar orang-orang yang sesat." },
+    { n:33, a:"وَمَا أُرْسِلُوا عَلَيْهِمْ حَافِظِينَ",                                                                l:"Wa maaa ursiluu 'alaihim haafizhiin",                                    i:"Padahal orang-orang yang berdosa itu tidak dikirim untuk penjaga bagi orang-orang mukmin." },
+    { n:34, a:"فَالْيَوْمَ الَّذِينَ آمَنُوا مِنَ الْكُفَّارِ يَضْحَكُونَ",                                            l:"Falyaumal laziina aamanuu minal kuffaari yadhhakuun",                   i:"Maka pada hari ini, orang-orang yang beriman menertawakan orang-orang kafir," },
+    { n:35, a:"عَلَى الْأَرَائِكِ يَنْظُرُونَ",                                                                         l:"Alal araaa'iki yanzhuruun",                                              i:"Sambil (duduk) di atas dipan-dipan mereka memandang." },
+    { n:36, a:"هَلْ ثُوِّبَ الْكُفَّارُ مَا كَانُوا يَفْعَلُونَ",                                                      l:"Hal suwwibal kuffaaru maa kaanuu yaf'aluun",                            i:"Tidakkah orang-orang kafir itu diberi ganjaran terhadap apa yang dahulu mereka kerjakan?" }
+  ]
+};
+
+const SURAHS = { waqiah: WAQIAH, mutaf: MUTAF };
+</script>
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPT 2: DATABASE (IndexedDB)
+═══════════════════════════════════════════ -->
+<script>
+const DB = {
+  name: 'quran-offline-v2',
+  store: 'audios',
+
+  open() {
+    return new Promise((ok, err) => {
+      const r = indexedDB.open(this.name, 2);
+      r.onupgradeneeded = () => {
+        if (!r.result.objectStoreNames.contains(this.store))
+          r.result.createObjectStore(this.store);
+      };
+      r.onsuccess = () => ok(r.result);
+      r.onerror   = () => err(r.error);
+    });
+  },
+
+  async get(key) {
+    const db = await this.open();
+    return new Promise((ok, err) => {
+      const r = db.transaction(this.store,'readonly')
+                  .objectStore(this.store).get(key);
+      r.onsuccess = () => ok(r.result || null);
+      r.onerror   = () => err(r.error);
+    });
+  },
+
+  async put(key, val) {
+    const db = await this.open();
+    return new Promise((ok, err) => {
+      const tx = db.transaction(this.store,'readwrite');
+      tx.objectStore(this.store).put(val, key);
+      tx.oncomplete = ok;
+      tx.onerror = () => err(tx.error);
+    });
+  },
+
+  async has(key) { return !!(await this.get(key)); },
+
+  async clear() {
+    const db = await this.open();
+    return new Promise((ok, err) => {
+      const tx = db.transaction(this.store,'readwrite');
+      tx.objectStore(this.store).clear();
+      tx.oncomplete = ok;
+      tx.onerror = () => err(tx.error);
+    });
+  },
+
+  async getAllKeys() {
+    const db = await this.open();
+    return new Promise((ok, err) => {
+      const r = db.transaction(this.store,'readonly')
+                  .objectStore(this.store).getAllKeys();
+      r.onsuccess = () => ok(r.result);
+      r.onerror   = () => err(r.error);
+    });
+  },
+
+  async getAll() {
+    const db = await this.open();
+    return new Promise((ok, err) => {
+      const cur = db.transaction(this.store,'readonly')
+                    .objectStore(this.store).openCursor();
+      const res = [];
+      cur.onsuccess = e => {
+        const c = e.target.result;
+        if (c) { res.push({ key: c.key, blob: c.value }); c.continue(); }
+        else ok(res);
+      };
+      cur.onerror = () => err(cur.error);
+    });
+  }
+};
+</script>
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPT 3: APP UTAMA
+═══════════════════════════════════════════ -->
+<script>
+// ── State ────────────────────────────────────
+let S = {
+  tab:        'waqiah',
+  online:     navigator.onLine,
+  cached:     {},
+  count:      { '056': 0, '083': 0 },
+  storage:    '-',
+  loading:    false,
+  dlProgress: { cur: 0, tot: 0, per: {} },
+  ayah:       null,
+  playing:    false,
+  autoNext:   true,
+  speed:      1,
+  // panels
+  showHowto:  false,
+  showDl:     true,
+  showAdv:    false,
+  // export/import
+  exporting:  false,
+  expProg:    { cur: 0, tot: 0, size: 0 },
+  expMsg:     '',
+  importing:  false,
+  impProg:    { cur: 0, tot: 0, name: '' },
+  impMsg:     '',
+  // audio
+  blobUrl:    null
+};
+
+let audioEl   = null;
+let ayahNodes = {};
+
+// ── Helpers ───────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmtSize = b => b < 1024 ? b+'B' : b < 1048576
+  ? (b/1024).toFixed(1)+'KB' : (b/1048576).toFixed(1)+'MB';
+
+function set(patch) { Object.assign(S, patch); render(); }
+
+// ── Cache state ───────────────────────────────
+async function refreshCache() {
+  const keys  = await DB.getAllKeys();
+  const cache = {};
+  keys.forEach(k => { if (typeof k === 'string') cache[k] = true; });
+  set({
+    cached: cache,
+    count:  {
+      '056': keys.filter(k => typeof k==='string' && k.startsWith('056-')).length,
+      '083': keys.filter(k => typeof k==='string' && k.startsWith('083-')).length
+    }
+  });
+}
+
+// ── Audio ─────────────────────────────────────
+async function getUrl(code, num) {
+  const key = `${code}-${String(num).padStart(3,'0')}`;
+  const blob = await DB.get(key);
+  if (blob) {
+    if (S.blobUrl) URL.revokeObjectURL(S.blobUrl);
+    const url = URL.createObjectURL(blob);
+    S.blobUrl = url;
+    return url;
+  }
+  if (!navigator.onLine) return null;
+  return `https://everyayah.com/data/Alafasy_128kbps/${code}${String(num).padStart(3,'0')}.mp3`;
+}
+
+async function play(num) {
+  set({ ayah: num, playing: false });
+  const code = SURAHS[S.tab].code;
+  const url  = await getUrl(code, num);
+  if (!url) { scrollTo(num); return; }
+  try {
+    audioEl.pause();
+    audioEl.src = url;
+    audioEl.playbackRate = S.speed;
+    const p = audioEl.play();
+    if (p?.catch) p.then(() => set({playing:true})).catch(() => set({playing:false}));
+    else set({playing:true});
+  } catch { set({playing:false}); }
+  scrollTo(num);
+}
+
+function scrollTo(num) {
+  setTimeout(() => ayahNodes[num]?.scrollIntoView({behavior:'smooth',block:'center'}), 100);
+}
+
+// ── Download ──────────────────────────────────
+async function downloadAll() {
+  if (S.loading) return;
+  const { code, count } = SURAHS[S.tab];
+  set({ loading: true, dlProgress: { cur:0, tot:count, per:{} } });
+
+  // coba download full mp3 dulu
+  try {
+    if (!await DB.has(`FULL-${code}`)) {
+      const r = await fetch(`https://server8.mp3quran.net/afs/${code}.mp3`,
+                            { signal: AbortSignal.timeout(10000) });
+      if (r.ok) await DB.put(`FULL-${code}`, await r.blob());
+    }
+  } catch {}
+
+  const per = {};
+  for (let i = 1; i <= count; i++) {
+    const pad = String(i).padStart(3,'0');
+    const key = `${code}-${pad}`;
+    if (await DB.has(key)) {
+      per[i] = 'done';
+      set({ dlProgress: { cur:i, tot:count, per:{...per} } });
+      continue;
+    }
+    per[i] = 'loading';
+    set({ dlProgress: { cur:i-1, tot:count, per:{...per} } });
+    try {
+      const r = await fetch(
+        `https://everyayah.com/data/Alafasy_128kbps/${code}${pad}.mp3`,
+        { signal: AbortSignal.timeout(15000) }
+      );
+      if (!r.ok) throw 0;
+      await DB.put(key, await r.blob());
+      per[i] = 'done';
+    } catch { per[i] = 'error'; }
+    set({ dlProgress: { cur:i, tot:count, per:{...per} } });
+    await new Promise(r => setTimeout(r, 60));
+  }
+  set({ loading: false });
+  await refreshCache();
+}
+
+// ── JSZip loader ──────────────────────────────
+function loadJSZip() {
+  if (window.JSZip) return Promise.resolve(window.JSZip);
+  return new Promise((ok, err) => {
+    if (!navigator.onLine) { err(new Error('OFFLINE')); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+    s.onload  = () => window.JSZip ? ok(window.JSZip) : err(new Error('load fail'));
+    s.onerror = () => err(new Error('cdn fail'));
+    document.head.appendChild(s);
+  });
+}
+
+// ── Export ────────────────────────────────────
+async function exportData() {
+  if (S.exporting) return;
+  set({ exporting:true, expMsg:'', expProg:{cur:0,tot:0,size:0} });
+  const all = await DB.getAll();
+  if (!all.length) { set({exporting:false, expMsg:'Belum ada audio. Download dulu.'}); return; }
+  let JSZip;
+  try { JSZip = await loadJSZip(); }
+  catch(e) {
+    set({ exporting:false,
+      expMsg: e.message==='OFFLINE'
+        ? '⚠️ Butuh internet sekali untuk load JSZip.'
+        : '❌ Gagal load JSZip.' });
+    return;
+  }
+  try {
+    const zip = new JSZip();
+    const f056 = zip.folder('Al-Waqiah');
+    const f083 = zip.folder('Al-Muthaffifin');
+    const full = zip.folder('full');
+    let size=0, done=0;
+    for (const {key,blob} of all) {
+      size += blob.size; done++;
+      set({ expProg:{cur:done,tot:all.length,size} });
+      if      (key.startsWith('056-'))  f056.file(key.split('-')[1]+'.mp3', blob);
+      else if (key.startsWith('083-'))  f083.file(key.split('-')[1]+'.mp3', blob);
+      else if (key.startsWith('FULL-')) full.file(key.replace('FULL-','')+'.mp3', blob);
+      if (done%10===0) await new Promise(r=>setTimeout(r,5));
+    }
+    zip.file('manifest.json', JSON.stringify({
+      app:'quran-offline-player', version:1,
+      exportedAt: new Date().toISOString(),
+      totalFiles: all.length, totalSize: size
+    },null,2));
+    const blob = await zip.generateAsync({type:'blob',compression:'STORE'});
+    const fname = `quran-offline-${new Date().toISOString().slice(0,10)}.zip`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = fname;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);
+    set({ exporting:false, expMsg:`✅ Export ${all.length} file (${fmtSize(blob.size)}) → ${fname}` });
+  } catch(e) { set({exporting:false, expMsg:'❌ '+e.message}); }
+}
+
+// ── Import ────────────────────────────────────
+async function importData(file) {
+  if (!file || !file.name.endsWith('.zip')) {
+    set({impMsg:'⚠️ File harus .zip hasil Export.'}); return;
+  }
+  set({ importing:true, impMsg:'', impProg:{cur:0,tot:0,name:'Memuat ZIP...'} });
+  let JSZip;
+  try { JSZip = await loadJSZip(); }
+  catch(e) {
+    set({ importing:false,
+      impMsg: e.message==='OFFLINE'
+        ? '⚠️ Butuh internet sekali untuk load JSZip.'
+        : '❌ Gagal load JSZip.' });
+    return;
+  }
+  try {
+    const zip = await JSZip.loadAsync(file);
+    const mp3s = Object.keys(zip.files)
+      .filter(p => !zip.files[p].dir && p.toLowerCase().endsWith('.mp3'));
+    if (!mp3s.length) {
+      set({importing:false, impMsg:'❌ ZIP tidak valid: tidak ada .mp3.'}); return;
+    }
+    let ok=0, skip=0;
+    for (let i=0; i<mp3s.length; i++) {
+      const path = mp3s[i];
+      set({ impProg:{cur:i,tot:mp3s.length,name:path} });
+      try {
+        const blob = await zip.files[path].async('blob');
+        let key = '';
+        if      (path.startsWith('Al-Waqiah/'))      key = '056-'+path.split('/').pop().replace('.mp3','').padStart(3,'0');
+        else if (path.startsWith('Al-Muthaffifin/')) key = '083-'+path.split('/').pop().replace('.mp3','').padStart(3,'0');
+        else if (path.startsWith('full/')) {
+          const c = path.split('/').pop().replace('.mp3','');
+          if (c==='056'||c==='083') key = 'FULL-'+c;
+        }
+        if (key) { await DB.put(key, blob); ok++; }
+        else skip++;
+      } catch { skip++; }
+      if (i%5===0) await new Promise(r=>setTimeout(r,5));
+    }
+    await refreshCache();
+    set({
+      importing:false,
+      impProg:{cur:mp3s.length,tot:mp3s.length,name:'Selesai'},
+      impMsg:`✅ ${ok} file berhasil${skip?`, ${skip} dilewati`:''}.${ok?' Status jadi Offline ✅':''}`
+    });
+  } catch(e) { set({importing:false, impMsg:'❌ '+e.message}); }
+}
+</script>
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPT 4: RENDER UI
+═══════════════════════════════════════════ -->
+<script>
+function render() {
+  const surah   = SURAHS[S.tab];
+  const isComp  = S.count[surah.code] >= surah.count;
+  const cnt     = S.count[surah.code];
+  const pct     = S.dlProgress.tot
+    ? Math.round(S.dlProgress.cur/S.dlProgress.tot*100) : 0;
+  const totFile = S.count['056']+S.count['083'];
+
+  $('app').innerHTML = `
+  <div style="min-height:100vh;padding-bottom:100px;">
+
+    <!-- HEADER -->
+    <header style="position:sticky;top:0;z-index:40;
+      backdrop-filter:blur(20px);background:#021a1485;
+      border-bottom:1px solid #ffffff10;">
+      <div style="max-width:980px;margin:0 auto;
+        padding:12px 16px;display:flex;align-items:center;
+        justify-content:space-between;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="height:36px;width:36px;border-radius:12px;
+            background:white;color:#064e3b;display:grid;
+            place-items:center;font-weight:700;font-size:18px;
+            flex-shrink:0;">﷽</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;
+              letter-spacing:0.08em;">QURAN OFFLINE</div>
+            <div style="font-size:10px;color:#ffffff40;margin-top:1px;">
+              Al-Waqiah & Al-Muthaffifin
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="padding:4px 10px;border-radius:999px;font-size:11px;
+            background:${S.online?'#10b98115':'#ef444415'};
+            border:1px solid ${S.online?'#34d39930':'#f8717130'};
+            color:${S.online?'#6ee7b7':'#fca5a5'};">
+            ${S.online?'● Online':'● Offline'}
+          </span>
+          <span style="padding:4px 10px;border-radius:999px;font-size:11px;
+            background:#ffffff08;border:1px solid #ffffff10;color:#a1a1aa;">
+            ${S.storage}
+          </span>
+        </div>
+      </div>
+
+      <!-- TAB -->
+      <div style="max-width:980px;margin:0 auto;padding:0 16px 12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;
+          padding:4px;border-radius:12px;background:#ffffff08;
+          border:1px solid #ffffff10;">
+          ${['waqiah','mutaf'].map(t => {
+            const s = SURAHS[t];
+            const a = S.tab===t;
+            const c = S.count[s.code]>=s.count;
+            return `<button id="tab-${t}"
+              style="border-radius:10px;padding:10px 12px;text-align:left;
+                border:none;cursor:pointer;transition:all 0.2s;
+                background:${a?'white':'transparent'};
+                color:${a?'#064e3b':'#a1a1aa'};">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:13px;font-weight:700;">${s.name}</span>
+                ${c?`<span style="color:${a?'#059669':'#6ee7b7'};font-size:14px;">✓</span>`:''}
+              </div>
+              <div style="font-size:11px;margin-top:2px;
+                color:${a?'#52525b':'#71717a'};">
+                ${s.code} • ${s.count} ayat • ${S.count[s.code]}/${s.count}
+              </div>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main style="max-width:980px;margin:0 auto;padding:16px;">
+
+      <!-- Panel: Cara Pakai -->
+      <div style="border-radius:14px;background:#ffffff08;
+        border:1px solid #ffffff10;overflow:hidden;margin-bottom:12px;">
+        <button id="btn-howto"
+          style="width:100%;display:flex;align-items:center;
+            justify-content:space-between;padding:0 16px;height:44px;
+            background:none;border:none;cursor:pointer;color:inherit;
+            text-align:left;">
+          <span style="font-size:13px;font-weight:500;">ℹ️ Cara Pakai Offline</span>
+          <span style="transition:transform 0.3s;display:inline-block;
+            transform:${S.showHowto?'rotate(180deg)':'none'};">▾</span>
+        </button>
+        ${S.showHowto?`
+        <div style="padding:0 16px 16px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
+            ${[
+              ['1','Download','Pilih surah → klik Download'],
+              ['2','Tunggu','Progress 001..096 selesai'],
+              ['3','Mode Pesawat','Aktifkan airplane mode'],
+              ['4','Putar','Semua ayat tersedia offline']
+            ].map(([n,t,d])=>`
+            <div style="border-radius:10px;background:#ffffff08;
+              border:1px solid #ffffff08;padding:12px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="height:20px;width:20px;border-radius:999px;
+                  background:white;color:black;font-size:11px;
+                  font-weight:700;display:grid;place-items:center;">${n}</span>
+                <span style="font-size:12px;font-weight:600;">${t}</span>
+              </div>
+              <p style="font-size:11px;color:#71717a;margin-top:6px;">${d}</p>
+            </div>`).join('')}
+          </div>
+        </div>`:''}
+      </div>
+
+      <!-- Panel: Download -->
+      <div style="border-radius:16px;background:#ffffff0a;
+        border:1px solid #ffffff12;overflow:hidden;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;
+          gap:12px;padding:0 16px;height:52px;">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+            <span style="font-size:20px;">${isComp?'✅':'⬇️'}</span>
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-size:13px;font-weight:600;">${surah.name}</span>
+                <span style="font-size:11px;padding:2px 8px;border-radius:999px;
+                  background:${isComp?'#10b98115':'#ffffff0a'};
+                  border:1px solid ${isComp?'#34d39920':'#ffffff15'};
+                  color:${isComp?'#6ee7b7':'#a1a1aa'};">
+                  ${cnt}/${surah.count} ${isComp?'Offline':''}
+                </span>
+              </div>
+              <div style="font-size:11px;color:#71717a;">
+                ${S.loading?`Mengunduh ${S.dlProgress.cur}/${S.dlProgress.tot} • ${pct}%`
+                  :isComp?'Siap mode pesawat':'Butuh internet untuk download'}
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            ${!isComp&&!S.loading?`
+            <button id="btn-dl"
+              style="height:32px;padding:0 14px;border-radius:999px;
+                background:white;color:black;font-size:12px;
+                font-weight:700;border:none;cursor:pointer;">
+              Download
+            </button>`:''}
+            ${S.loading?`<span style="font-size:12px;color:#fbbf24;">${pct}%</span>`:''}
+            <button id="btn-toggle-dl"
+              style="height:32px;width:32px;border-radius:999px;
+                background:#ffffff0a;border:1px solid #ffffff15;
+                display:grid;place-items:center;cursor:pointer;color:#a1a1aa;">
+              <span style="transition:transform 0.3s;display:inline-block;
+                transform:${S.showDl?'rotate(180deg)':'none'};">▾</span>
+            </button>
+          </div>
+        </div>
+
+        ${S.showDl?`
+        <div style="padding:0 16px 16px;border-top:1px solid #ffffff0a;">
+          <div style="padding-top:12px;display:flex;flex-direction:column;gap:10px;">
+
+            <!-- tombol download besar -->
+            <button id="btn-dl2" ${S.loading?'disabled':''}
+              style="width:100%;height:44px;border-radius:12px;
+                background:white;color:black;font-weight:700;
+                font-size:13px;border:none;cursor:pointer;
+                opacity:${S.loading?'0.5':'1'};">
+              ${S.loading?`⏳ Mengunduh ${S.dlProgress.cur}/${S.dlProgress.tot} • ${pct}%`
+                :`⬇️ Download Audio Offline (${surah.name})`}
+            </button>
+
+            <!-- progress bar -->
+            <div style="height:4px;border-radius:999px;
+              background:#ffffff0a;overflow:hidden;">
+              <div style="height:100%;background:white;
+                transition:width 0.3s;
+                width:${isComp?100:pct}%;"></div>
+            </div>
+
+            <!-- grid status ayat -->
+            <div style="display:grid;
+              grid-template-columns:repeat(auto-fill,minmax(34px,1fr));gap:3px;">
+              ${Array.from({length:surah.count},(_,i)=>{
+                const n   = i+1;
+                const key = `${surah.code}-${String(n).padStart(3,'0')}`;
+                const ok  = !!S.cached[key];
+                const st  = S.dlProgress.per[n];
+                const bg  = ok  ? '#10b98120'
+                          : st==='loading' ? 'white'
+                          : st==='error'   ? '#ef444420'
+                          : '#ffffff08';
+                const cl  = ok  ? '#6ee7b7'
+                          : st==='loading' ? 'black'
+                          : st==='error'   ? '#fca5a5'
+                          : '#52525b';
+                const bd  = ok  ? '#34d39930'
+                          : st==='loading' ? 'white'
+                          : '#ffffff10';
+                return `<div style="height:22px;border-radius:4px;
+                  border:1px solid ${bd};font-size:9px;
+                  display:grid;place-items:center;
+                  background:${bg};color:${cl};">
+                  ${String(n).padStart(3,'0')}
+                </div>`;
+              }).join('')}
+            </div>
+
+            <!-- tombol hapus -->
+            <button id="btn-clear"
+              style="align-self:flex-end;height:28px;padding:0 12px;
+                border-radius:999px;background:#ffffff0a;
+                border:1px solid #ffffff15;font-size:11px;
+                cursor:pointer;color:#f4f4f5;">
+              🗑️ Hapus Cache
+            </button>
+          </div>
+        </div>`:''}
+      </div>
+
+      <!-- Panel: Pengaturan Lanjutan -->
+      <div style="border-radius:16px;background:#0a2a2070;
+        border:1px solid #78350f20;overflow:hidden;margin-bottom:16px;">
+        <button id="btn-adv"
+          style="width:100%;display:flex;align-items:center;
+            justify-content:space-between;padding:0 16px;height:48px;
+            background:none;border:none;cursor:pointer;color:inherit;
+            text-align:left;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:16px;">⚙️</span>
+            <span style="font-size:13px;font-weight:600;">Pengaturan Lanjutan</span>
+            <span style="font-size:10px;padding:2px 6px;border-radius:999px;
+              background:#10b98115;border:1px solid #34d39920;color:#6ee7b7;">
+              Pindah HP • Export/Import
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;color:#71717a;">${totFile} file</span>
+            <span style="transition:transform 0.3s;display:inline-block;
+              transform:${S.showAdv?'rotate(180deg)':'none'};">▾</span>
+          </div>
+        </button>
+
+        ${S.showAdv?`
+        <div style="padding:16px;border-top:1px solid #ffffff0a;">
+          <p style="font-size:12px;color:#a1a1aa;line-height:1.6;margin-bottom:16px;">
+            📱 Data offline tersimpan di browser HP ini (IndexedDB).
+            <b style="color:#e4e4e7;">Kirim file HTML saja tidak membawa audio.</b>
+            Gunakan Export untuk buat backup ZIP → kirim ke HP lain → Import.
+          </p>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+            <!-- Export -->
+            <div style="border-radius:10px;background:#ffffff08;
+              border:1px solid #ffffff10;padding:12px;">
+              <div style="font-size:12px;font-weight:700;margin-bottom:6px;">
+                📦 Export Data
+              </div>
+              <p style="font-size:11px;color:#71717a;margin-bottom:10px;line-height:1.5;">
+                Buat file ZIP berisi semua audio offline.
+                Kirim via Drive/Telegram ke HP lain.
+              </p>
+              <button id="btn-export" ${S.exporting||totFile===0?'disabled':''}
+                style="width:100%;height:36px;border-radius:999px;
+                  background:white;color:black;font-size:12px;
+                  font-weight:700;border:none;cursor:pointer;
+                  opacity:${S.exporting||totFile===0?'0.5':'1'};">
+                ${S.exporting
+                  ?`⏳ ${S.expProg.cur}/${S.expProg.tot} (${fmtSize(S.expProg.size)})`
+                  :'⬆️ Export'}
+              </button>
+              ${S.expMsg?`<p style="margin-top:8px;font-size:11px;
+                line-height:1.5;padding:8px;border-radius:8px;
+                background:#f59e0b15;color:#fde68a;">${S.expMsg}</p>`:''}
+            </div>
+
+            <!-- Import -->
+            <div style="border-radius:10px;background:#ffffff08;
+              border:1px solid #ffffff10;padding:12px;">
+              <div style="font-size:12px;font-weight:700;margin-bottom:6px;">
+                📥 Import Data
+              </div>
+              <p style="font-size:11px;color:#71717a;margin-bottom:10px;line-height:1.5;">
+                Pilih file ZIP hasil Export.
+                Audio langsung tersedia offline.
+              </p>
+              <input type="file" id="file-import" accept=".zip" style="display:none;">
+              <button id="btn-import" ${S.importing?'disabled':''}
+                style="width:100%;height:36px;border-radius:999px;
+                  background:#10b981;color:white;font-size:12px;
+                  font-weight:700;border:none;cursor:pointer;
+                  opacity:${S.importing?'0.5':'1'};">
+                ${S.importing
+                  ?`⏳ ${S.impProg.cur}/${S.impProg.tot}`
+                  :'⬇️ Import'}
+              </button>
+              ${S.impMsg?`<p style="margin-top:8px;font-size:11px;
+                line-height:1.5;padding:8px;border-radius:8px;
+                background:#10b98115;color:#6ee7b7;">${S.impMsg}</p>`:''}
+            </div>
+          </div>
+        </div>`:''}
+      </div>
+
+      <!-- Kontrol Pemutaran -->
+      <div style="display:flex;flex-wrap:wrap;align-items:center;
+        gap:8px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:6px;
+          padding:6px 12px;border-radius:999px;background:#0a2a20;
+          border:1px solid #ffffff15;font-size:11px;">
+          🎵 Kecepatan:
+          ${[0.75,1,1.25,1.5].map(sp=>`
+          <button class="spd" data-v="${sp}"
+            style="padding:2px 8px;border-radius:999px;border:1px solid;
+              cursor:pointer;font-size:11px;
+              background:${S.speed===sp?'#fbbf24':'#3f3f46'};
+              border-color:${S.speed===sp?'#fcd34d':'#52525b'};
+              color:${S.speed===sp?'black':'#d4d4d8'};">
+            ${sp}x
+          </button>`).join('')}
+        </div>
+        <button id="btn-auto"
+          style="padding:6px 14px;border-radius:999px;border:1px solid;
+            cursor:pointer;font-size:11px;font-weight:600;
+            background:${S.autoNext?'#10b98120':'#3f3f46'};
+            border-color:${S.autoNext?'#34d39930':'#52525b'};
+            color:${S.autoNext?'#6ee7b7':'#a1a1aa'};">
+          Auto-Next ${S.autoNext?'ON':'OFF'}
+        </button>
+      </div>
+
+      <!-- List Ayat -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${surah.ayahs.map(ay => {
+          const key    = `${surah.code}-${String(ay.n).padStart(3,'0')}`;
+          const cached = !!S.cached[key];
+          const active = S.ayah === ay.n;
+          const playng = active && S.playing;
+          return `
+          <div id="ay-${ay.n}" data-n="${ay.n}"
+            style="border-radius:16px;border:1px solid;padding:16px 20px;
+              transition:all 0.2s;
+              background:${active?'linear-gradient(135deg,#133528,#0e2a20)':'#0d2e2460'};
+              border-color:${active?'#fbbf2440':'#ffffff0a'};">
+
+            <!-- Header ayat -->
+            <div style="display:flex;align-items:center;
+              justify-content:space-between;gap:12px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="height:30px;width:30px;border-radius:10px;
+                  display:grid;place-items:center;font-size:12px;
+                  font-weight:700;border:1px solid;flex-shrink:0;
+                  background:${active?'#fbbf24':'#021a14'};
+                  border-color:${active?'#fcd34d':'#ffffff15'};
+                  color:${active?'black':'#a1a1aa'};">
+                  ${ay.n}
+                </div>
+                <span style="font-size:10px;padding:2px 8px;
+                  border-radius:999px;border:1px solid;
+                  background:${cached?'#10b98120':'#3f3f4620'};
+                  border-color:${cached?'#34d39930':'#52525b30'};
+                  color:${cached?'#6ee7b7':'#71717a'};">
+                  ${cached?'offline ✅':'online'}
+                </span>
+              </div>
+              <button class="btn-play" data-n="${ay.n}"
+                style="height:34px;width:34px;border-radius:999px;
+                  display:grid;place-items:center;border:1px solid;
+                  cursor:pointer;transition:all 0.2s;
+                  background:${playng?'#fbbf24':'#3f3f46'};
+                  border-color:${playng?'#fcd34d':'#52525b'};
+                  color:${playng?'black':'#e4e4e7'};
+                  font-size:${playng?'14px':'12px'};">
+                ${playng?'⏸':'▶'}
+              </button>
+            </div>
+
+            <!-- Teks Arab -->
+            <div class="arab"
+              style="margin-top:12px;font-size:28px;line-height:2.2;
+                color:#f5f1e8;">
+              ${ay.a}
+            </div>
+
+            <!-- Latin -->
+            <div style="margin-top:8px;font-size:12px;font-style:italic;
+              color:#fde68a90;line-height:1.6;">
+              ${ay.l}
+            </div>
+
+            <!-- Terjemahan -->
+            <div style="margin-top:6px;font-size:13px;color:#d4d4d8;
+              line-height:1.6;">
+              ${ay.i}
+            </div>
+
+            <!-- Loading indicator -->
+            ${active?`
+            <div style="margin-top:10px;height:3px;border-radius:999px;
+              background:#021a14;overflow:hidden;border:1px solid #ffffff08;">
+              <div class="animate-shimmer"
+                style="height:100%;width:100%;
+                  background:linear-gradient(90deg,#fcd34d,#34d399,#fcd34d);
+                  background-size:200% 100%;">
+              </div>
+            </div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- Catatan -->
+      <div style="margin-top:24px;border-radius:14px;background:#0a2a20;
+        border:1px solid #ffffff08;padding:14px;font-size:11px;
+        color:#71717a;line-height:1.7;">
+        Audio: everyayah.com (Alafasy 128kbps) & mp3quran.net.
+        Teks Arab + terjemahan sudah tersimpan di file ini (offline).
+        Audio per-ayat tersimpan di IndexedDB browser.
+        PWA ready — bisa Add to Home Screen.
+      </div>
+    </main>
+  </div>
+  `;
+
+  // Bind events setelah render
+  bindEvents(surah);
+
+  // Simpan referensi node ayat untuk scroll
+  surah.ayahs.forEach(ay => {
+    ayahNodes[ay.n] = $(`ay-${ay.n}`);
+  });
+
+  // Pasang audio element
+  audioEl = $('audioEl') || (() => {
+    const a = document.createElement('audio');
+    a.id = 'audioEl'; a.preload = 'none';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    return a;
+  })();
+  audioEl.onended = () => {
+    const s = SURAHS[S.tab];
+    if (S.autoNext && S.ayah && S.ayah < s.count) play(S.ayah+1);
+    else set({playing:false});
+  };
+  audioEl.onplay  = () => set({playing:true});
+  audioEl.onpause = () => set({playing:false});
+  audioEl.onerror = () => set({playing:false});
+}
+
+function bindEvents(surah) {
+  // Tab
+  $('tab-waqiah')?.addEventListener('click', () => {
+    if (S.tab!=='waqiah') {
+      audioEl?.pause();
+      set({tab:'waqiah',ayah:null,playing:false});
+    } else window.scrollTo({top:0,behavior:'smooth'});
+  });
+  $('tab-mutaf')?.addEventListener('click', () => {
+    if (S.tab!=='mutaf') {
+      audioEl?.pause();
+      set({tab:'mutaf',ayah:null,playing:false});
+    } else window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  // Panels
+  $('btn-howto')?.addEventListener('click', () => set({showHowto:!S.showHowto}));
+  $('btn-toggle-dl')?.addEventListener('click', () => set({showDl:!S.showDl}));
+  $('btn-adv')?.addEventListener('click', () => set({showAdv:!S.showAdv}));
+
+  // Download
+  $('btn-dl')?.addEventListener('click', downloadAll);
+  $('btn-dl2')?.addEventListener('click', downloadAll);
+
+  // Hapus cache
+  $('btn-clear')?.addEventListener('click', async () => {
+    if (!confirm('Hapus semua audio offline?')) return;
+    await DB.clear();
+    audioEl?.pause();
+    if (S.blobUrl) URL.revokeObjectURL(S.blobUrl);
+    set({cached:{},count:{'056':0,'083':0},ayah:null,playing:false,blobUrl:null});
+  });
+
+  // Speed
+  document.querySelectorAll('.spd').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = parseFloat(btn.dataset.v);
+      set({speed:v});
+      if (audioEl) audioEl.playbackRate = v;
+    });
+  });
+
+  // Auto-next
+  $('btn-auto')?.addEventListener('click', () => set({autoNext:!S.autoNext}));
+
+  // Play buttons per ayat
+  document.querySelectorAll('.btn-play').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const n = parseInt(btn.dataset.n);
+      if (S.ayah===n && S.playing) { audioEl?.pause(); set({playing:false}); }
+      else play(n);
+    });
+  });
+
+  // Player bar
+  $('btn-prev')?.addEventListener('click', () => {
+    if (S.ayah && S.ayah>1) play(S.ayah-1);
+  });
+  $('btn-next')?.addEventListener('click', () => {
+    if (S.ayah && S.ayah<surah.count) play(S.ayah+1);
+  });
+  $('btn-pp')?.addEventListener('click', () => {
+    if (!S.ayah) { play(1); return; }
+    if (S.playing) { audioEl?.pause(); set({playing:false}); }
+    else audioEl?.play().then(()=>set({playing:true})).catch(()=>{});
+  });
+
+  // Export/Import
+  $('btn-export')?.addEventListener('click', exportData);
+  $('btn-import')?.addEventListener('click', () => $('file-import')?.click());
+  $('file-import')?.addEventListener('change', e => {
+    const f = e.target.files?.[0];
+    if (f) importData(f);
+    e.target.value='';
+  });
+}
+</script>
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPT 5: PLAYER BAR (fixed bottom)
+═══════════════════════════════════════════ -->
+<script>
+function renderPlayerBar() {
+  let bar = $('player-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'player-bar';
+    bar.style.cssText = `
+      position:fixed;bottom:0;left:0;right:0;z-index:50;
+      border-top:1px solid #78350f30;
+      background:#041f17f5;backdrop-filter:blur(20px);
+    `;
+    document.body.appendChild(bar);
+  }
+  const surah = SURAHS[S.tab];
+  const info  = S.ayah ? surah.ayahs[S.ayah-1] : null;
+  bar.innerHTML = `
+    <div style="max-width:980px;margin:0 auto;
+      padding:10px 16px;display:flex;align-items:center;gap:12px;">
+      <div style="height:40px;width:40px;border-radius:12px;
+        background:linear-gradient(135deg,#fcd34d,#d97706);
+        display:grid;place-items:center;color:black;
+        font-weight:700;font-size:15px;flex-shrink:0;">
+        ${S.ayah ? String(S.ayah).padStart(2,'0') : '—'}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${info ? `${surah.name} • Ayat ${S.ayah}` : 'Pilih ayat untuk diputar'}
+        </div>
+        <div style="font-size:11px;color:#a1a1aa;
+          white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${info ? info.i.slice(0,65)+'…' : S.online?'Streaming jika online':'Putar dari cache'}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button id="btn-prev"
+          style="height:36px;width:36px;border-radius:999px;
+            background:#3f3f46;border:1px solid #52525b;
+            display:grid;place-items:center;cursor:pointer;
+            color:#e4e4e7;font-size:14px;">
+          ⏮
+        </button>
+        <button id="btn-pp"
+          style="height:40px;width:40px;border-radius:999px;
+            background:#fbbf24;color:black;
+            border:1px solid #fcd34d;
+            display:grid;place-items:center;cursor:pointer;
+            font-size:18px;">
+          ${S.playing?'⏸':'▶'}
+        </button>
+        <button id="btn-next"
+          style="height:36px;width:36px;border-radius:999px;
+            background:#3f3f46;border:1px solid #52525b;
+            display:grid;place-items:center;cursor:pointer;
+            color:#e4e4e7;font-size:14px;">
+          ⏭
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// Override set agar player bar ikut update
+const _origSet = set;
+// eslint-disable-next-line no-global-assign
+set = function(patch) {
+  Object.assign(S, patch);
+  render();
+  renderPlayerBar();
+};
+</script>
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPT 6: PWA
+═══════════════════════════════════════════ -->
+<script>
+const PWA = {
+  deferredPrompt: null,
+  swReg: null,
+  installed: false,
+
+  async init() {
+    this.manifest();
+    await this.sw();
+    this.listenPrompt();
+    this.checkInstalled();
+    this.listenInstalled();
+  },
+
+  manifest() {
+    const svg = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="80" fill="#064e3b"/>
+      <text x="256" y="310" font-size="260" text-anchor="middle" fill="white">📖</text>
+    </svg>`);
+    const icon = `data:image/svg+xml,${svg}`;
+    const data = {
+      name: "Al-Qur'an Offline",
+      short_name: "Al-Qur'an",
+      description: "Al-Waqiah & Al-Muthaffifin offline",
+      start_url: "./",
+      scope: "./",
+      display: "standalone",
+      orientation: "portrait",
+      background_color: "#021a14",
+      theme_color: "#064e3b",
+      icons: [
+        {src:icon, sizes:"192x192", type:"image/svg+xml", purpose:"any maskable"},
+        {src:icon, sizes:"512x512", type:"image/svg+xml", purpose:"any maskable"}
+      ]
+    };
+    const link = $('manifest-link');
+    if (link) link.href = URL.createObjectURL(
+      new Blob([JSON.stringify(data)], {type:'application/manifest+json'})
+    );
+  },
+
+  async sw() {
+    if (!('serviceWorker' in navigator)) return;
+    const code = `
+      const C='quran-v4';
+      self.addEventListener('install',e=>{
+        e.waitUntil(caches.open(C).then(c=>c.addAll(['./']).catch(()=>{})).then(()=>self.skipWaiting()));
+      });
+      self.addEventListener('activate',e=>{
+        e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+      });
+      self.addEventListener('fetch',e=>{
+        const u=new URL(e.request.url);
+        if(['everyayah.com','mp3quran.net','cdnjs.cloudflare.com','fonts.g'].some(h=>u.hostname.includes(h)))return;
+        if(e.request.method!=='GET')return;
+        e.respondWith(
+          caches.match(e.request).then(r=>{
+            if(r){fetch(e.request).then(n=>{if(n.ok)caches.open(C).then(c=>c.put(e.request,n))}).catch(()=>{});return r;}
+            return fetch(e.request).then(n=>{if(n.ok){const cl=n.clone();caches.open(C).then(c=>c.put(e.request,cl));}return n;}).catch(()=>caches.match('./'));
+          })
+        );
+      });
+    `;
+    try {
+      this.swReg = await navigator.serviceWorker.register(
+        URL.createObjectURL(new Blob([code],{type:'text/javascript'})),
+        {scope:'./'}
+      );
+    } catch(e) { console.warn('[SW]',e); }
+  },
+
+  listenPrompt() {
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      this.deferredPrompt = e;
+      // Tampilkan tombol install
+      const btn = $('btn-install');
+      if (btn) btn.style.display = 'flex';
+    });
+  },
+
+  checkInstalled() {
+    const standalone =
+      window.matchMedia('(display-mode:standalone)').matches ||
+      window.navigator.standalone === true;
+    if (standalone) {
+      this.installed = true;
+      const btn = $('btn-install');
+      if (btn) btn.style.display = 'none';
+    }
+  },
+
+  async triggerInstall() {
+    if (!this.deferredPrompt) {
+      this.showGuide(); return;
+    }
+    this.deferredPrompt.prompt();
+    const {outcome} = await this.deferredPrompt.userChoice;
+    if (outcome==='accepted') {
+      const btn = $('btn-install');
+      if (btn) btn.style.display = 'none';
+    }
+    this.deferredPrompt = null;
+  },
+
+  showGuide() {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const safr = /safari/i.test(navigator.userAgent) && !/chrome/i.test(navigator.userAgent);
+    const msg = ios && safr
+      ? `<ol style="line-height:2.2;font-size:13px;">
+           <li>Tap tombol <b>Share ⬆️</b> di Safari</li>
+           <li>Pilih <b>"Add to Home Screen"</b></li>
+           <li>Tap <b>"Add"</b></li>
+         </ol>`
+      : `<ol style="line-height:2.2;font-size:13px;">
+           <li>Tap menu <b>⋮</b> di Chrome</li>
+           <li>Pilih <b>"Add to Home screen"</b></li>
+           <li>Tap <b>"Add"</b></li>
+         </ol>`;
+    const modal = document.createElement('div');
+    modal.style.cssText = `position:fixed;inset:0;background:#00000080;
+      z-index:99999;display:flex;align-items:flex-end;
+      justify-content:center;padding:16px;backdrop-filter:blur(4px);`;
+    modal.innerHTML = `
+      <div style="background:#1c1c2e;border:1px solid #ffffff20;
+        border-radius:20px 20px 16px 16px;padding:24px;
+        width:100%;max-width:480px;color:white;">
+        <div style="text-align:center;margin-bottom:16px;font-size:36px;">📱</div>
+        <div style="font-weight:700;font-size:15px;
+          margin-bottom:12px;text-align:center;">
+          Install Al-Qur'an Offline
+        </div>
+        ${msg}
+        <button onclick="this.closest('div[style*=fixed]').remove()"
+          style="margin-top:16px;width:100%;padding:12px;
+            border-radius:12px;background:#064e3b;color:white;
+            border:none;font-size:14px;font-weight:600;cursor:pointer;">
+          Mengerti
+        </button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+  },
+
+  listenInstalled() {
+    window.addEventListener('appinstalled', () => {
+      this.installed = true;
+      const btn = $('btn-install');
+      if (btn) btn.style.display = 'none';
+    });
+  }
+};
+
+window.PWA = PWA;
+</script>
+
+
+<!-- ═══════════════════════════════════════════
+     SCRIPT 7: INIT (jalankan semua)
+═══════════════════════════════════════════ -->
+<script>
+async function init() {
+  // Online/offline
+  window.addEventListener('online',  () => set({online:true}));
+  window.addEventListener('offline', () => set({online:false}));
+
+  // Storage estimate
+  async function updateStorage() {
+    if (navigator.storage?.estimate) {
+      const {usage} = await navigator.storage.estimate();
+      const s = usage ? (usage/1048576).toFixed(1)+' MB' : '-';
+      if (s !== S.storage) set({storage:s});
+    }
+  }
+  updateStorage();
+  setInterval(updateStorage, 5000);
+
+  // Load cache state dari DB
+  await refreshCache();
+
+  // Render pertama
+  render();
+  renderPlayerBar();
+
+  // PWA
+  PWA.init();
+}
+
+// Jalankan saat DOM siap
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+
+</body>
+</html>
